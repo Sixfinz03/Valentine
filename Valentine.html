@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>A Valentine's Journey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(255,107,157,0.1) 0%, rgba(192,108,132,0.1) 50%, rgba(108,91,123,0.1) 100%);
+        }
+
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff6b9d 0%, #c06c84 50%, #6c5b7b 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+
+        #start-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #start-screen h1 {
+            font-size: 4em;
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        #start-screen p {
+            font-size: 1.2em;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 40px;
+        }
+
+        #start-btn {
+            padding: 20px 60px;
+            font-size: 1.5em;
+            background: white;
+            color: #ff6b9d;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        #start-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            #start-screen h1 {
+                font-size: 2.5em;
+                padding: 0 20px;
+            }
+
+            #start-screen p {
+                font-size: 1em;
+                padding: 0 20px;
+            }
+
+            #start-btn {
+                padding: 15px 40px;
+                font-size: 1.2em;
+            }
+
+            #instructions {
+                font-size: 0.7em;
+                padding: 10px 15px;
+                bottom: 220px;
+            }
+
+            #letter-content {
+                padding: 30px 20px;
+                max-width: 90%;
+                margin: 20px;
+            }
+
+            #letter-content h2 {
+                font-size: 1.8em;
+            }
+
+            #letter-content p {
+                font-size: 0.9em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #start-screen h1 {
+                font-size: 2em;
+            }
+
+            #start-btn {
+                padding: 12px 30px;
+                font-size: 1em;
+            }
+
+            #instructions {
+                font-size: 0.6em;
+                padding: 8px 12px;
+                bottom: 220px;
+            }
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100vh;
+        }
+
+        #instructions {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            text-align: center;
+            z-index: 100;
+        }
+
+        #letter-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 500;
+        }
+
+        #letter-overlay.show {
+            display: flex;
+        }
+
+        #letter-content {
+            background: #f9f5f0;
+            padding: 60px;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 20px solid #8b4513;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        #letter-content h2 {
+            color: #c06c84;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+
+        #letter-content p {
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        #close-letter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ff6b9d;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        /* Mobile Joystick */
+        #mobile-joystick {
+            position: fixed;
+            bottom: 80px;
+            left: 30px;
+            width: 120px;
+            height: 120px;
+            display: none;
+            z-index: 200;
+        }
+
+        #joystick-base {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 107, 157, 0.3);
+            border: 3px solid rgba(255, 107, 157, 0.6);
+            border-radius: 50%;
+        }
+
+        #joystick-stick {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 107, 157, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            top: 35px;
+            left: 35px;
+            transition: all 0.1s;
+        }
+
+        /* Mobile look button */
+        #mobile-look-button {
+            position: fixed;
+            bottom: 80px;
+            right: 30px;
+            width: 120px;
+            height: 120px;
+            background: rgba(192, 108, 132, 0.3);
+            border: 3px solid rgba(192, 108, 132, 0.6);
+            border-radius: 50%;
+            display: none;
+            z-index: 200;
+            touch-action: none;
+        }
+
+        #mobile-look-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        /* Show mobile controls on touch devices */
+        @media (hover: none) and (pointer: coarse) {
+            #mobile-joystick,
+            #mobile-look-button {
+                display: block;
+            }
+            .desktop-only {
+                display: none;
+            }
+            .mobile-only {
+                display: inline;
+            }
+        }
+
+        /* Force show on small screens regardless of touch */
+        @media (max-width: 768px) {
+            #mobile-joystick,
+            #mobile-look-button {
+                display: block !important;
+            }
+
+            #mobile-joystick {
+                bottom: 120px;
+                left: 20px;
+            }
+
+            #mobile-look-button {
+                bottom: 120px;
+                right: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #mobile-joystick,
+            #mobile-look-button {
+                width: 100px;
+                height: 100px;
+                bottom: 100px;
+            }
+
+            #joystick-base {
+                width: 100px;
+                height: 100px;
+            }
+
+            #joystick-stick {
+                width: 40px;
+                height: 40px;
+                top: 30px;
+                left: 30px;
+            }
+
+            #mobile-look-button {
+                width: 100px;
+                height: 100px;
+            }
+
+            #mobile-look-inner {
+                font-size: 0.75em;
+            }
+        }
+
+        .mobile-only {
+            display: none;
+        }
+
+        .desktop-only {
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+    <div id="start-screen">
+        <h1>💝 A Valentine's Journey 💝</h1>
+        <button id="start-btn">Begin Your Journey</button>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div id="instructions">
+        <span class="desktop-only">Use WASD or Arrow Keys to move | Press SHIFT to toggle mouse lock</span>
+        <span class="mobile-only">Use joystick to move | Drag right side to look around</span>
+    </div>
+
+    <div id="letter-overlay">
+        <div id="letter-content">
+            <button id="close-letter">×</button>
+            <h2>Dear Po</h2>
+            <p>Hi po! I just want to say Happy Valentine’s Day hehe. Kay wala man koy mahatag nimo ron kani na lang ahahahaha. Bitaw nakahunahuna ko ba na sa kadugay nakog sigeg pursue nimo kiligon gihapon kog mag call ta no joke hehehe. Gwapahan ko nimo bisag imo rang dili dili an, maong e embrace na. Nya unta di na ka sigeg pabadlong ana imong eating schedule po kay magsigeg balik balik imong hyper syalan di baya tika ma ampingan bantay lang ka AHHAHAHAHA. Nya kay padung naman sad ta graduate unta wala na jud tay lisod nga problema nga masugatan og naa man gani, unta dali ra ma solve. E ampo sad nako imong health mentally and physically and imong wealth, as well as imong future status. Unya diay po if wala man gani ni ingon nimo ani pero in every achievement that you’ve made, proud kay ko ana ha, so ayaw jud e down imong self okay? Mao lang to po hehe. Once again, Happy Valentine’s Day po hehehe.</p>
+            <p style="text-align: center; margin-top: 30px; font-style: italic;">Para Satong Future,<br>**Akong Future AHHAHAHHAHA</p>
+        </div>
+    </div>
+
+    <!-- Mobile Controls -->
+    <div id="mobile-joystick">
+        <div id="joystick-base"></div>
+        <div id="joystick-stick"></div>
+    </div>
+
+    <div id="mobile-look-button">
+        <div id="mobile-look-inner">Look<br>Around</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let scene, camera, renderer;
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let velocity = new THREE.Vector3();
+        let direction = new THREE.Vector3();
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
+        let isPointerLocked = false;
+        let isMouseLocked = false; // Roblox-style lock
+        let letterFrame;
+        let euler = new THREE.Euler(0, 0, 0, 'YXZ'); // Proper euler order to prevent gimbal lock
+
+        const startScreen = document.getElementById('start-screen');
+        const startBtn = document.getElementById('start-btn');
+        const letterOverlay = document.getElementById('letter-overlay');
+        const closeLetterBtn = document.getElementById('close-letter');
+
+        startBtn.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            setTimeout(() => {
+                init();
+                animate();
+            }, 500);
+        });
+
+        closeLetterBtn.addEventListener('click', () => {
+            letterOverlay.classList.remove('show');
+        });
+
+        // Mobile Joystick Controls
+        let joystickActive = false;
+        let joystickCenter = { x: 0, y: 0 };
+        let joystickVector = { x: 0, y: 0 };
+        
+        const joystickBase = document.getElementById('mobile-joystick');
+        const joystickStick = document.getElementById('joystick-stick');
+        const lookButton = document.getElementById('mobile-look-button');
+        
+        let lookTouchId = null;
+        let lookStartPos = { x: 0, y: 0 };
+
+        // Joystick for movement (left side)
+        joystickBase.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            joystickActive = true;
+            const rect = joystickBase.getBoundingClientRect();
+            joystickCenter.x = rect.left + rect.width / 2;
+            joystickCenter.y = rect.top + rect.height / 2;
+            updateJoystick(e.touches[0]);
+        });
+
+        joystickBase.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (joystickActive) {
+                updateJoystick(e.touches[0]);
+            }
+        });
+
+        joystickBase.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            joystickActive = false;
+            joystickVector = { x: 0, y: 0 };
+            joystickStick.style.left = '35px';
+            joystickStick.style.top = '35px';
+            moveForward = false;
+            moveBackward = false;
+            moveLeft = false;
+            moveRight = false;
+        });
+
+        function updateJoystick(touch) {
+            const deltaX = touch.clientX - joystickCenter.x;
+            const deltaY = touch.clientY - joystickCenter.y;
+            const distance = Math.min(35, Math.sqrt(deltaX * deltaX + deltaY * deltaY));
+            const angle = Math.atan2(deltaY, deltaX);
+            
+            const stickX = 35 + distance * Math.cos(angle);
+            const stickY = 35 + distance * Math.sin(angle);
+            
+            joystickStick.style.left = stickX + 'px';
+            joystickStick.style.top = stickY + 'px';
+            
+            // Normalize joystick vector
+            joystickVector.x = deltaX / 35;
+            joystickVector.y = deltaY / 35;
+            
+            // Update movement flags based on joystick position
+            moveForward = joystickVector.y < -0.3;
+            moveBackward = joystickVector.y > 0.3;
+            moveLeft = joystickVector.x < -0.3;
+            moveRight = joystickVector.x > 0.3;
+        }
+
+        // Look control (right side)
+        lookButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (letterOverlay.classList.contains('show')) return;
+            
+            const touch = e.touches[0];
+            lookTouchId = touch.identifier;
+            lookStartPos.x = touch.clientX;
+            lookStartPos.y = touch.clientY;
+            isMouseLocked = true; // Auto-enable mouse lock for mobile
+        });
+
+        lookButton.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (letterOverlay.classList.contains('show')) return;
+            if (lookTouchId === null) return;
+            
+            for (let touch of e.touches) {
+                if (touch.identifier === lookTouchId) {
+                    const deltaX = touch.clientX - lookStartPos.x;
+                    const deltaY = touch.clientY - lookStartPos.y;
+                    
+                    euler.setFromQuaternion(camera.quaternion);
+                    euler.y -= deltaX * 0.003;
+                    euler.x -= deltaY * 0.003;
+                    euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, euler.x));
+                    camera.quaternion.setFromEuler(euler);
+                    
+                    lookStartPos.x = touch.clientX;
+                    lookStartPos.y = touch.clientY;
+                    break;
+                }
+            }
+        });
+
+        lookButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            lookTouchId = null;
+        });
+
+        function init() {
+            // Detect mobile device first
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+            window.isMobile = isMobile; // Store globally for later use
+            
+            // Scene setup
+            scene = new THREE.Scene();
+            // No background - transparent domain effect
+            // Disable fog on mobile for performance
+            if (!isMobile) {
+                scene.fog = new THREE.Fog(0xffffff, 10, 50);
+            }
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1.6, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: !isMobile, // Disable antialiasing on mobile
+                alpha: true,
+                powerPreference: isMobile ? "low-power" : "high-performance"
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 2)); // Lower pixel ratio on mobile
+            renderer.setClearColor(0x000000, 0);
+            renderer.shadowMap.enabled = !isMobile; // Disable shadows on mobile
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            // Hallway lights - fewer on mobile
+            const lightCount = isMobile ? 5 : 10;
+            for (let i = 0; i < lightCount; i++) {
+                const light = new THREE.PointLight(0xff6b9d, 0.8, 10);
+                light.position.set(0, 3, -i * (isMobile ? 16 : 8));
+                scene.add(light);
+
+                const light2 = new THREE.PointLight(0xc06c84, 0.8, 10);
+                light2.position.set(0, 3, -i * (isMobile ? 16 : 8) - (isMobile ? 8 : 4));
+                scene.add(light2);
+            }
+
+            // Floor
+            const floorGeometry = new THREE.PlaneGeometry(10, 100);
+            const floorMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffe4e9,
+                roughness: 0.3,
+                metalness: 0.1,
+                transparent: true,
+                opacity: 0.3
+            });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            // Ceiling
+            const ceilingMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffe4e9,
+                roughness: 0.3,
+                metalness: 0.1,
+                transparent: true,
+                opacity: 0.2
+            });
+            const ceiling = new THREE.Mesh(floorGeometry.clone(), ceilingMaterial);
+            ceiling.position.y = 4;
+            ceiling.rotation.x = Math.PI / 2;
+            scene.add(ceiling);
+
+            // Walls
+            const wallGeometry = new THREE.PlaneGeometry(100, 4);
+            const wallMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffd4dc,
+                roughness: 0.6,
+                transparent: true,
+                opacity: 0.2
+            });
+            
+            const leftWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            leftWall.position.set(-5, 2, -50);
+            leftWall.rotation.y = Math.PI / 2;
+            scene.add(leftWall);
+
+            const rightWall = new THREE.Mesh(wallGeometry, wallMaterial);
+            rightWall.position.set(5, 2, -50);
+            rightWall.rotation.y = -Math.PI / 2;
+            scene.add(rightWall);
+
+            // Picture frames along the hallway - fewer on mobile
+            const frameCount = isMobile ? 2 : 4; // 2 on mobile, 4 on desktop per side
+            for (let i = 1; i <= frameCount; i++) {
+                createHeart(-4, 2, -i * 15);
+                createHeart(4, 2, -i * 15);
+            }
+
+            // End wall with letter frame
+            const endWallGeometry = new THREE.PlaneGeometry(10, 4);
+            const endWallMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffc4d0,
+                transparent: true,
+                opacity: 0.3
+            });
+            const endWall = new THREE.Mesh(endWallGeometry, endWallMaterial);
+            endWall.position.set(0, 2, -75);
+            scene.add(endWall);
+
+            // Letter frame
+            createLetterFrame();
+
+            // Event listeners
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('click', onDocumentClick);
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function createHeart(x, y, z) {
+            // Create picture frame
+            const frameGroup = new THREE.Group();
+            
+            // Frame border
+            const isMobile = window.isMobile || window.innerWidth < 768;
+            const frameShape = new THREE.Shape();
+            frameShape.moveTo(-0.6, -0.8);
+            frameShape.lineTo(0.6, -0.8);
+            frameShape.lineTo(0.6, 0.8);
+            frameShape.lineTo(-0.6, 0.8);
+            frameShape.lineTo(-0.6, -0.8);
+            
+            const holePath = new THREE.Path();
+            holePath.moveTo(-0.5, -0.7);
+            holePath.lineTo(0.5, -0.7);
+            holePath.lineTo(0.5, 0.7);
+            holePath.lineTo(-0.5, 0.7);
+            holePath.lineTo(-0.5, -0.7);
+            frameShape.holes.push(holePath);
+            
+            const frameGeometry = new THREE.ExtrudeGeometry(frameShape, {
+                depth: 0.05,
+                bevelEnabled: false
+            });
+            const frameMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8b4513,
+                metalness: 0.3,
+                roughness: 0.6
+            });
+            const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+            frameGroup.add(frame);
+            
+            // Canvas/Picture inside frame - lower resolution texture on mobile
+            const canvasGeometry = new THREE.PlaneGeometry(0.9, 1.3);
+            
+            // Image URLs - PASTE YOUR IMAGE URLS HERE
+            const imageUrls = [
+                'https://scontent.fceb2-1.fna.fbcdn.net/v/t39.30808-6/504350244_697369263038710_2684095513751648334_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=a5f93a&_nc_eui2=AeF38DS58gWwhtDuPvCqavdtTLKd3oVwAOJMsp3ehXAA4nq1mRuAQQIwHw3cDfjioTxwXwRFafN-sCsPZZyE5oj9&_nc_ohc=i0p9ZFhTF_cQ7kNvwHli1aA&_nc_oc=AdnoV6hDeaztXuMcW1hvBT7o_DNWYEaTMiOAd6QvI4a2QaWb94orvXWFW3y5hV9M6lk&_nc_zt=23&_nc_ht=scontent.fceb2-1.fna&_nc_gid=hBKnlcGAWJtkaiuDtpWMoA&oh=00_AfsrBcbgAR5YCEWHPcSrvn0ozkTpciHTmRZ1EYyE3H-zbA&oe=6995B30E', // Your local image
+                'https://scontent.fceb2-1.fna.fbcdn.net/v/t51.82787-15/536873375_17976837482874940_7117288424205792758_n.webp?stp=dst-jpg_tt6&_nc_cat=108&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeEJIM55O6wdy6oinDOSxy5KFHtSP2mhyUkUe1I_aaHJSU088Jd8O8WtFE_XLRQ2L9lgVrx8r8TXjcJCHVUvSBAM&_nc_ohc=7gREZrv5Q1wQ7kNvwEiNwF_&_nc_oc=Adk53jtN5obW6r9oJlyyIATsRKmgnOIwrHPrV_UPSL-aOvaH9XfRqpBNXv8efcLNLbc&_nc_zt=23&_nc_ht=scontent.fceb2-1.fna&_nc_gid=agNuLblWqbY9rCho5VwnTQ&oh=00_AftomquzWKx7q8TwHJGvvBvE8aqpyoYIOzsNFJRogpLvdw&oe=6995BA64', // Replace with your image URL
+                'https://scontent.fceb2-1.fna.fbcdn.net/v/t51.75761-15/491423764_17964098630874940_4687659033569068952_n.webp?stp=dst-jpg_tt6&_nc_cat=108&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeEFF7zrlyWYM7EP4zVsJZn8kThk5CcEtL2ROGTkJwS0vXBLi_2DI8w9b7o4BJKehIKmi0cwxvd0IMdmxPl7H9Z1&_nc_ohc=fx2mAcjJ8RMQ7kNvwEa394e&_nc_oc=Adnr1QZAeQLc-wmzFxfdpV22y_-YED317MZhN3df9C_e2IRNVdZ0UeZjM_pkHRc96cs&_nc_zt=23&_nc_ht=scontent.fceb2-1.fna&_nc_gid=kcm9D8Dq5c3tS07dGDE9lw&oh=00_Afvk7b2U65dqZAm468hNht8Ej9k47cspSjuc5q-z_2y1Jg&oe=6995AEE8', // Replace with your image URL
+                'https://scontent.fceb6-1.fna.fbcdn.net/v/t51.75761-15/473753986_17953136999874940_2035753061637095113_n.webp?stp=dst-jpg_tt6&_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeHKwTeADbvTYJbK4I52QtAxRE_7Aub60V1ET_sC5vrRXXc8xl7YA3YLQABj6brzXRCCQU8RWI75qWpLWUftc52C&_nc_ohc=XWmlsBMXadUQ7kNvwF8BKnv&_nc_oc=AdmbNm4ZoALdot2of_svqIDCcdreKHhHV9fySVaYVO4ezqJXKUxpdkxq3-bUzijkxr8&_nc_zt=23&_nc_ht=scontent.fceb6-1.fna&_nc_gid=3csTHQUw5cjMA8Y3wFtM9g&oh=00_Afui4V4__8NqcRmLCZXL2fHob-tQ8ziN6aQP_ZRDtpPHRg&oe=6995D592',  // Replace with your image URL
+                'https://scontent.fceb6-1.fna.fbcdn.net/v/t39.30808-6/481670956_628182643290706_1083039886212463582_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeGz2bsJEwKwFPbTu7qHgwf5eNQxoLcgfZt41DGgtyB9m9RnpT14TxDsG8XyrQkWfOeq1Q1Lufn1V0Mb8AFmWSP9&_nc_ohc=bBy69cNcoQ4Q7kNvwHsC3cC&_nc_oc=AdnUppoQdA0vmh-vP7YPK-XNuQtaJeuL-NYp2L4uvYttXgxLTX4n3mf1UfiVqfCeC_o&_nc_zt=23&_nc_ht=scontent.fceb6-1.fna&_nc_gid=21RwIEMM66u2tKPJ5QMP1A&oh=00_AftX3mlh5E5ecxqNemMRgqhMBw2XNh2JMtH6OZu2NGBhmQ&oe=6995B405', // Replace with your image URL
+                'https://scontent.fceb6-1.fna.fbcdn.net/v/t39.30808-6/468882136_562768629832108_6071540874475926859_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=a5f93a&_nc_eui2=AeGntPpXPYvXx2kBV4wzMGHK86Qj4K_2TzzzpCPgr_ZPPNG9xU-9kQ6IDft9OH2j9RroL3dZ8aS9Ig1c56MPS40U&_nc_ohc=Xs7v1E6EOhQQ7kNvwHwy20e&_nc_oc=AdmA8JBqiZj8O9Q7pjlIVWsUmRLMNOVsZGPtOJfGp43EgTB53oyyKOCX64yVGeh-cGU&_nc_zt=23&_nc_ht=scontent.fceb6-1.fna&_nc_gid=3_NDVhUcgn7tGI5yK6KLZg&oh=00_Aft4xpoyU2IB5ojbeT9uDuKzet17CPXxO9ycfzxpG6wvOQ&oe=6995AC98', // Replace with your image URL
+                'https://scontent.fceb6-1.fna.fbcdn.net/v/t39.30808-6/481289619_623482040427433_3903349280545835797_n.jpg?stp=cp6_dst-jpg_tt6&_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeHPUw4p1XRo8heHSvzNsZPPxoXVLwr6gkLGhdUvCvqCQouUntJZL0MP_ErjW795z6xcxRdRb_vyM0IXbB5kVhza&_nc_ohc=Gm8FsF7oqVYQ7kNvwENOF5b&_nc_oc=AdlmccJZecaWht3I5G3iYpmTd0iPnm_FXnwGCiAtB68x-OuUJus5TL377NClcobtZR4&_nc_zt=23&_nc_ht=scontent.fceb6-1.fna&_nc_gid=M8KQbx79nFVtuSollcS7pg&oh=00_Afv8lwfTqOUXc3GJSPd0KwkCKMr5jErVN74B3RFz4YWdYg&oe=6995CCBF', // Replace with your image URL
+                'https://scontent.fceb6-4.fna.fbcdn.net/v/t39.30808-6/481196906_624959326946371_1810252338241910223_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeE2Q8KuQ5FGrt666nQWbFhxJ2u2CKPZaIEna7YIo9logWLMaop5dkRd3HLT5joZS-kF67nqyDfoKajL8mhfz9qj&_nc_ohc=LOsu0I9hCs0Q7kNvwFla5G9&_nc_oc=AdkUN0nr5M-OCZwPo-eY0_xcK46XxVmajxhMDcLnKZi2LPyOHtnsRJhZrTUa13E2e6U&_nc_zt=23&_nc_ht=scontent.fceb6-4.fna&_nc_gid=mlRHfCliuNjY_FmQm3PKuA&oh=00_AfuroNywteRaGyDOq1L4BSprazoL9g61cFZKm2D4E3NXmw&oe=6995B41F'  // Replace with your image URL
+            ];
+            
+            // Create unique index based on position (left/right and z position)
+            // This ensures each frame has a different image
+            const sideOffset = x < 0 ? 0 : 4; // Left side: 0-3, Right side: 4-7
+            const zIndex = Math.floor(Math.abs(z / 15)) - 1; // Based on z position
+            const imageIndex = (sideOffset + zIndex) % imageUrls.length;
+            
+            const textureLoader = new THREE.TextureLoader();
+            const texture = textureLoader.load(imageUrls[imageIndex]);
+            // Reduce texture quality on mobile
+            if (isMobile) {
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+            }
+            
+            const canvasMaterial = new THREE.MeshStandardMaterial({ 
+                map: texture,
+                transparent: true,
+                opacity: 0.9
+            });
+            const canvasMesh = new THREE.Mesh(canvasGeometry, canvasMaterial);
+            canvasMesh.position.z = 0.03;
+            frameGroup.add(canvasMesh);
+            
+            frameGroup.position.set(x, y, z);
+            frameGroup.rotation.y = x < 0 ? Math.PI / 2 : -Math.PI / 2;
+            frameGroup.scale.set(1.8, 1.8, 1.8);
+            
+            scene.add(frameGroup);
+
+            // Animate frames - skip on mobile for performance
+            if (!isMobile) {
+                const originalY = y;
+                function animateFrame() {
+                    frameGroup.position.y = originalY + Math.sin(Date.now() * 0.001 + z) * 0.1;
+                }
+                frameGroup.userData.animate = animateFrame;
+            }
+        }
+
+        function createLetterFrame() {
+            const letterGroup = new THREE.Group();
+            
+            // White envelope body
+            const envelopeGeometry = new THREE.BoxGeometry(2.5, 1.8, 0.1);
+            const envelopeMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xe8e8e8,
+                roughness: 0.5,
+                metalness: 0.1
+            });
+            const envelope = new THREE.Mesh(envelopeGeometry, envelopeMaterial);
+            envelope.position.set(0, 2, 0);
+            letterGroup.add(envelope);
+            
+            // Envelope flap (light gray/blue tint)
+            const flapShape = new THREE.Shape();
+            flapShape.moveTo(-1.25, 0);
+            flapShape.lineTo(0, 0.9);
+            flapShape.lineTo(1.25, 0);
+            flapShape.lineTo(-1.25, 0);
+            
+            const flapGeometry = new THREE.ExtrudeGeometry(flapShape, {
+                depth: 0.05,
+                bevelEnabled: false
+            });
+            const flapMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xdcdce0,
+                roughness: 0.5
+            });
+            const flap = new THREE.Mesh(flapGeometry, flapMaterial);
+            flap.position.set(0, 2.9, 0.05);
+            letterGroup.add(flap);
+            
+            // Flap fold lines (darker gray)
+            const lineGeometry = new THREE.PlaneGeometry(2.5, 0.02);
+            const lineMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xd0d0d8,
+                roughness: 0.6
+            });
+            const line1 = new THREE.Mesh(lineGeometry, lineMaterial);
+            line1.position.set(0, 2.9, 0.11);
+            line1.rotation.z = Math.PI / 4;
+            letterGroup.add(line1);
+            
+            const line2 = new THREE.Mesh(lineGeometry.clone(), lineMaterial);
+            line2.position.set(0, 2.9, 0.11);
+            line2.rotation.z = -Math.PI / 4;
+            letterGroup.add(line2);
+            
+            // Red heart seal in the center
+            const heartShape = new THREE.Shape();
+            const scale = 0.3;
+            heartShape.moveTo(0, 0);
+            heartShape.bezierCurveTo(0, -0.3 * scale, -0.6 * scale, -0.3 * scale, -0.6 * scale, 0);
+            heartShape.bezierCurveTo(-0.6 * scale, 0.3 * scale, 0, 0.6 * scale, 0, 1 * scale);
+            heartShape.bezierCurveTo(0, 0.6 * scale, 0.6 * scale, 0.3 * scale, 0.6 * scale, 0);
+            heartShape.bezierCurveTo(0.6 * scale, -0.3 * scale, 0, -0.3 * scale, 0, 0);
+            
+            const heartGeometry = new THREE.ExtrudeGeometry(heartShape, {
+                depth: 0.08,
+                bevelEnabled: true,
+                bevelThickness: 0.02,
+                bevelSize: 0.02
+            });
+            const heartMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xe31b23,
+                roughness: 0.3,
+                metalness: 0.1
+            });
+            const heart = new THREE.Mesh(heartGeometry, heartMaterial);
+            heart.position.set(0, 2, 0.15);
+            heart.rotation.z = Math.PI; // Flip the heart right-side up
+            heart.scale.set(2, 2, 1);
+            heart.userData.isLetter = true;
+            letterGroup.add(heart);
+            
+            // Make envelope clickable too
+            envelope.userData.isLetter = true;
+            flap.userData.isLetter = true;
+            
+            // Store reference to letter frame
+            letterFrame = envelope;
+            
+            letterGroup.position.set(0, 0, -74.5); // Center the letter between two bouquets
+            scene.add(letterGroup);
+
+            // Store for animation - skip on mobile
+            if (!isMobile) {
+                letterGroup.userData.floatOffset = 0;
+                letterGroup.userData.animate = function() {
+                    letterGroup.userData.floatOffset += 0.02;
+                    letterGroup.position.y = Math.sin(letterGroup.userData.floatOffset) * 0.2;
+                    letterGroup.rotation.y = Math.sin(letterGroup.userData.floatOffset * 0.5) * 0.1;
+                };
+            }
+
+            // CREATE FLOWER BOUQUET ON STAND - LEFT SIDE
+            const bouquetGroup = new THREE.Group();
+            
+            // Wooden stand/table
+            const segments = isMobile ? 16 : 32; // Lower detail on mobile
+            const standTopGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.05, segments);
+            const standMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8b4513,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+            const standTop = new THREE.Mesh(standTopGeometry, standMaterial);
+            standTop.position.set(0, 1.2, 0);
+            bouquetGroup.add(standTop);
+            
+            // Stand leg
+            const standLegGeometry = new THREE.CylinderGeometry(0.08, 0.08, 1.2, isMobile ? 8 : 16);
+            const standLeg = new THREE.Mesh(standLegGeometry, standMaterial);
+            standLeg.position.set(0, 0.6, 0);
+            bouquetGroup.add(standLeg);
+            
+            // Base
+            const standBaseGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.08, segments);
+            const standBase = new THREE.Mesh(standBaseGeometry, standMaterial);
+            standBase.position.set(0, 0.04, 0);
+            bouquetGroup.add(standBase);
+            
+            // Glass vase
+            const vaseGeometry = new THREE.CylinderGeometry(0.15, 0.2, 0.4, segments);
+            const vaseMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xadd8e6,
+                transparent: true,
+                opacity: 0.4,
+                roughness: 0.1,
+                metalness: 0.3
+            });
+            const vase = new THREE.Mesh(vaseGeometry, vaseMaterial);
+            vase.position.set(0, 1.45, 0);
+            bouquetGroup.add(vase);
+            
+            // Create roses (red flowers)
+            const createRose = (x, y, z, color) => {
+                const roseGroup = new THREE.Group();
+                
+                // Flower head (sphere for rose) - lower detail on mobile
+                const flowerSegments = isMobile ? 8 : 16;
+                const flowerGeometry = new THREE.SphereGeometry(0.08, flowerSegments, flowerSegments);
+                const flowerMaterial = new THREE.MeshStandardMaterial({ 
+                    color: color,
+                    roughness: 0.6
+                });
+                const flower = new THREE.Mesh(flowerGeometry, flowerMaterial);
+                flower.position.set(x, y, z);
+                roseGroup.add(flower);
+                
+                // Stem
+                const stemGeometry = new THREE.CylinderGeometry(0.01, 0.01, y - 1.45, isMobile ? 4 : 8);
+                const stemMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x2d5016,
+                    roughness: 0.8
+                });
+                const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+                stem.position.set(x, (y + 1.45) / 2, z);
+                roseGroup.add(stem);
+                
+                return roseGroup;
+            };
+            
+            // Add multiple roses in a bouquet arrangement - fewer on mobile
+            if (isMobile) {
+                // Mobile: only 3 roses
+                bouquetGroup.add(createRose(0, 1.9, 0, 0xff1744));      // Center red rose
+                bouquetGroup.add(createRose(-0.12, 1.85, 0.08, 0xe91e63)); // Pink rose
+                bouquetGroup.add(createRose(0.12, 1.85, -0.08, 0xd32f2f));  // Dark red rose
+            } else {
+                // Desktop: 7 roses
+                bouquetGroup.add(createRose(0, 1.9, 0, 0xff1744));      // Center red rose
+                bouquetGroup.add(createRose(-0.12, 1.85, 0.08, 0xe91e63)); // Pink rose
+                bouquetGroup.add(createRose(0.12, 1.85, -0.08, 0xd32f2f));  // Dark red rose
+                bouquetGroup.add(createRose(-0.08, 1.8, -0.1, 0xff4081));   // Light pink rose
+                bouquetGroup.add(createRose(0.1, 1.78, 0.1, 0xf50057));     // Magenta rose
+                bouquetGroup.add(createRose(0, 1.75, 0.12, 0xff6b9d));      // Valentine pink rose
+                bouquetGroup.add(createRose(-0.15, 1.72, 0, 0xc2185b));     // Deep pink rose
+            }
+            
+            // Add some baby's breath (white small flowers) - skip on mobile
+            if (!isMobile) {
+                for (let i = 0; i < 12; i++) {
+                    const babysBreathGeometry = new THREE.SphereGeometry(0.03, 8, 8);
+                    const babysBreathMaterial = new THREE.MeshStandardMaterial({ 
+                        color: 0xffffff,
+                        roughness: 0.5
+                    });
+                    const babysBreath = new THREE.Mesh(babysBreathGeometry, babysBreathMaterial);
+                    const angle = (i / 12) * Math.PI * 2;
+                    const radius = 0.15;
+                    babysBreath.position.set(
+                        Math.cos(angle) * radius,
+                        1.65 + Math.random() * 0.2,
+                        Math.sin(angle) * radius
+                    );
+                    bouquetGroup.add(babysBreath);
+                }
+            }
+            
+            // Position the first bouquet on the left
+            bouquetGroup.position.set(-2, 0, -74.5);
+            scene.add(bouquetGroup);
+            
+            // CREATE SECOND BOUQUET - RIGHT SIDE (clone the first one)
+            const bouquetGroup2 = bouquetGroup.clone();
+            bouquetGroup2.position.set(2, 0, -74.5);
+            scene.add(bouquetGroup2);
+            
+            // Add lights to illuminate both bouquets
+            const bouquetLight1 = new THREE.PointLight(0xffffff, 0.5, 3);
+            bouquetLight1.position.set(-2, 2, -74);
+            scene.add(bouquetLight1);
+            
+            const bouquetLight2 = new THREE.PointLight(0xffffff, 0.5, 3);
+            bouquetLight2.position.set(2, 2, -74);
+            scene.add(bouquetLight2);
+
+            // Spotlight on letter
+            const spotlight = new THREE.SpotLight(0xffffff, 2);
+            spotlight.position.set(0, 3.5, -72);
+            spotlight.target = envelope;
+            spotlight.angle = Math.PI / 6;
+            spotlight.penumbra = 0.3;
+            scene.add(spotlight);
+
+            // Add a subtle glow around the envelope
+            const glowLight = new THREE.PointLight(0xff6b9d, 1, 5);
+            glowLight.position.set(0, 2, -74.5);
+            scene.add(glowLight);
+
+            // Domain expansion style particles - disabled on mobile for performance
+            if (!isMobile) {
+                const particlesGeometry = new THREE.BufferGeometry();
+                const particleCount = 2000;
+                const positions = new Float32Array(particleCount * 3);
+
+                for (let i = 0; i < particleCount * 3; i += 3) {
+                    positions[i] = (Math.random() - 0.5) * 20;
+                    positions[i + 1] = Math.random() * 4;
+                    positions[i + 2] = -Math.random() * 80;
+                }
+
+                particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                const particlesMaterial = new THREE.PointsMaterial({
+                    color: 0xff6b9d,
+                    size: 0.08,
+                    transparent: true,
+                    opacity: 0.8,
+                    blending: THREE.AdditiveBlending
+                });
+                const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+                scene.add(particles);
+
+                // Store particles for animation
+                window.particles = particles;
+            } else {
+                window.particles = null; // No particles on mobile
+            }
+        }
+
+        function onKeyDown(event) {
+            switch (event.code) {
+                case 'ArrowUp':
+                case 'KeyW':
+                    moveForward = true;
+                    break;
+                case 'ArrowDown':
+                case 'KeyS':
+                    moveBackward = true;
+                    break;
+                case 'ArrowLeft':
+                case 'KeyA':
+                    moveLeft = true;
+                    break;
+                case 'ArrowRight':
+                case 'KeyD':
+                    moveRight = true;
+                    break;
+                case 'ShiftLeft':
+                case 'ShiftRight':
+                    // Toggle Roblox-style mouse lock
+                    isMouseLocked = !isMouseLocked;
+                    document.body.style.cursor = isMouseLocked ? 'none' : 'default';
+                    break;
+            }
+        }
+
+        function onKeyUp(event) {
+            switch (event.code) {
+                case 'ArrowUp':
+                case 'KeyW':
+                    moveForward = false;
+                    break;
+                case 'ArrowDown':
+                case 'KeyS':
+                    moveBackward = false;
+                    break;
+                case 'ArrowLeft':
+                case 'KeyA':
+                    moveLeft = false;
+                    break;
+                case 'ArrowRight':
+                case 'KeyD':
+                    moveRight = false;
+                    break;
+            }
+        }
+
+        let mouseX = 0, mouseY = 0;
+        function onMouseMove(event) {
+            if (letterOverlay.classList.contains('show')) return;
+            
+            // Camera rotation when mouse is locked
+            if (isMouseLocked) {
+                const movementX = event.movementX || 0;
+                const movementY = event.movementY || 0;
+
+                euler.setFromQuaternion(camera.quaternion);
+                euler.y -= movementX * 0.002;
+                euler.x -= movementY * 0.002;
+                euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, euler.x));
+                camera.quaternion.setFromEuler(euler);
+            } else {
+                // Show pointer cursor when hovering over letter
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(scene.children, true);
+
+                let hoveringLetter = false;
+                for (let intersect of intersects) {
+                    if (intersect.object.userData.isLetter || intersect.object.parent?.userData?.isLetter) {
+                        hoveringLetter = true;
+                        break;
+                    }
+                }
+                document.body.style.cursor = hoveringLetter ? 'pointer' : 'default';
+            }
+        }
+
+        function onDocumentClick(event) {
+            if (letterOverlay.classList.contains('show')) return;
+            if (isMouseLocked) return; // Can't click letter when mouse is locked
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children, true); // recursive search
+
+            for (let intersect of intersects) {
+                if (intersect.object.userData.isLetter || intersect.object.parent?.userData?.isLetter) {
+                    isMouseLocked = false;
+                    document.body.style.cursor = 'default';
+                    letterOverlay.classList.add('show');
+                    break;
+                }
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Movement
+            velocity.x -= velocity.x * 10.0 * 0.016;
+            velocity.z -= velocity.z * 10.0 * 0.016;
+
+            direction.z = Number(moveForward) - Number(moveBackward);
+            direction.x = Number(moveLeft) - Number(moveRight);
+            direction.normalize();
+
+            if (moveForward || moveBackward) {
+                const forward = new THREE.Vector3(0, 0, -1);
+                forward.applyQuaternion(camera.quaternion);
+                forward.y = 0;
+                forward.normalize();
+                camera.position.addScaledVector(forward, direction.z * 0.15);
+            }
+            if (moveLeft || moveRight) {
+                const right = new THREE.Vector3(1, 0, 0);
+                right.applyQuaternion(camera.quaternion);
+                right.y = 0;
+                right.normalize();
+                camera.position.addScaledVector(right, -direction.x * 0.15);
+            }
+
+            // Boundaries
+            camera.position.x = Math.max(-4, Math.min(4, camera.position.x));
+            camera.position.z = Math.max(-73, Math.min(1, camera.position.z));
+
+            // Animate hearts
+            scene.children.forEach(child => {
+                if (child.userData.animate) {
+                    child.userData.animate();
+                }
+            });
+
+            // Animate particles - only on desktop
+            if (window.particles) {
+                const positions = window.particles.geometry.attributes.position.array;
+                for (let i = 0; i < positions.length; i += 3) {
+                    positions[i + 1] += Math.sin(Date.now() * 0.001 + i) * 0.005;
+                    positions[i] += Math.sin(Date.now() * 0.0005 + i) * 0.003;
+                }
+                window.particles.geometry.attributes.position.needsUpdate = true;
+                window.particles.rotation.y += 0.0005;
+            }
+
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
